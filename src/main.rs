@@ -1,6 +1,7 @@
 use std::fmt;
 
 #[derive(Debug)]
+#[derive(PartialEq)]
 enum Symbol {
     M,
     I,
@@ -32,11 +33,30 @@ impl fmt::Display for Theorem {
     }
 }
 
+/*
+ * In this part, the 4 transformation rules are implemented by four rust functions.
+ */
+
+impl Theorem {
+    // Rule 1: `xI -> xIU` or every String ending on I can be appended by an U.
+    fn rule_1(&self) -> Option<Theorem> {
+        if &self.0[&self.0.len() - 1] == &Symbol::I {
+            Some(Theorem(vec![Symbol::U]))
+        } else {
+            None
+        }
+    }
+    
+}
+
+
 fn main() {
-    let x = Theorem(
-        vec![Symbol::M,
+    let x = Theorem(vec![Symbol::M,
              Symbol::I,
         //   Symbol::U,
         ]);
-    println!("{}", x);
+    match x.rule_1() {
+        None => println!("{}", "Fail"),
+        Some(theorem) => println!("{}", theorem),
+    }
 }
