@@ -32,6 +32,30 @@ mod tests {
         let empty: Theorem = Theorem(vec![]);
         assert!(empty.rule_1() == None);
     }
+    #[test]
+    fn test_rule_2_is_okay_on_empty_theorem() {
+        let empty: Theorem = Theorem(vec![]);
+        assert!(empty.rule_2() == None);
+    }
+    #[test]
+    fn test_rule_2_duplicates_empty() {
+        let m: Theorem = Theorem(vec![Symbol::M]);
+        assert!(m.rule_2() == Some(m));
+    }
+    #[test]
+    fn test_rule_2_duplicates_sequence() {
+        let mmu: Theorem = Theorem(vec![Symbol::M,
+                                        Symbol::M,
+                                        Symbol::U,
+        ]);
+        let mmumu: Theorem = Theorem(vec![Symbol::M,
+                                          Symbol::M,
+                                          Symbol::U,
+                                          Symbol::M,
+                                          Symbol::U,
+        ]);
+        assert!(mmu.rule_2() == Some(mmumu));
+    }
 }
 
 #[derive(Debug)]
@@ -84,8 +108,26 @@ impl Theorem {
             None
         }
     }
-}
 
+    /// Rule 2: `Mx -> Mxx` or if a String starts with M, the following part can be doubled.
+    fn rule_2(&self) -> Option<Theorem> {
+        if !&self.0.is_empty() && &self.0[0] == &Symbol::M {
+            let mut result = self.0.to_vec();
+            for i in 1..self.0.len() {
+              result.push(self.0[i].clone());
+            }
+            Some(Theorem(result))
+        } else {
+            None
+        }
+    }
+
+    // Rule 3: `xIIIy -> xUy` or replace all III with a U.
+    //fn rule_2(&self) -> Option<Theorem> {
+
+    //}
+
+}
 
 fn main() {
     let mi = Theorem(vec![Symbol::M,
