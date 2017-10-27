@@ -128,6 +128,86 @@ mod tests {
         let u: Theorem = Theorem(vec![Symbol::U]);
         assert!(iii.rule_3(1) == Some(u));
     }
+    #[test]
+    fn test_rule_4_is_okay_on_empty_theorem() {
+        let empty: Theorem = Theorem(vec![]);
+        assert!(empty.rule_4(0) == None);
+        let empty: Theorem = Theorem(vec![]);
+        assert!(empty.rule_4(1) == None);
+    }
+    #[test]
+    fn test_rule_4_applies_not() {
+        let mmu: Theorem = Theorem(vec![Symbol::M, Symbol::M, Symbol::U]);
+        assert!(mmu.rule_4(1) == None);
+    }
+    #[test]
+    fn test_rule_4_applies_on_single_occasion() {
+        let muum: Theorem = Theorem(vec![
+            Symbol::M,
+            Symbol::U,
+            Symbol::U,
+            Symbol::M
+        ]);
+        let mm: Theorem = Theorem(vec![Symbol::M, Symbol::M]);
+        assert!(muum.rule_4(1) == Some(mm));
+    }
+    #[test]
+    fn test_rule_4_applies_on_first_occasion() {
+        let muumumuum: Theorem = Theorem(vec![
+            Symbol::M,
+            Symbol::U,
+            Symbol::U,
+            Symbol::M,
+            Symbol::U,
+            Symbol::M,
+            Symbol::U,
+            Symbol::U,
+            Symbol::M,
+        ]);
+        let mmumuum: Theorem = Theorem(vec![
+            Symbol::M,
+            Symbol::M,
+            Symbol::U,
+            Symbol::M,
+            Symbol::U,
+            Symbol::U,
+            Symbol::M,
+        ]);
+        assert!(muumumuum.rule_4(1) == Some(mmumuum));
+    }
+    #[test]
+    fn test_rule_4_applies_on_second_occasion() {
+        let muumumuum: Theorem = Theorem(vec![
+            Symbol::M,
+            Symbol::U,
+            Symbol::U,
+            Symbol::M,
+            Symbol::U,
+            Symbol::M,
+            Symbol::U,
+            Symbol::U,
+            Symbol::M,
+        ]);
+        let muumumm: Theorem = Theorem(vec![
+            Symbol::M,
+            Symbol::U,
+            Symbol::U,
+            Symbol::M,
+            Symbol::U,
+            Symbol::M,
+            Symbol::M,
+        ]);
+        assert!(muumumuum.rule_4(2) == Some(muumumm));
+    }
+    #[test]
+    fn test_rule_4_on_just_uu() {
+        let uu: Theorem = Theorem(vec![
+            Symbol::U,
+            Symbol::U,
+        ]);
+        let empty: Theorem = Theorem(vec![]);
+        assert!(uu.rule_4(1) == Some(empty));
+    }
 }
 
 #[derive(Debug)]
@@ -233,6 +313,41 @@ impl Theorem {
     }
 
     // Rule 4: `xUUy -> xy` or cut out the n'th UU.
+    fn rule_4(&self, n: i32) -> Option<Theorem> {
+        if self.0.is_empty() || n < 1 {
+            return None;
+        }
+        let mut counter = n;
+        let mut cursor: usize = std::usize::MAX;
+        let mut c: usize = 0;
+        for i in 0..self.0.len() {
+            if &self.0[i] == &Symbol::U {
+                c += 1;
+            } else {
+                c = 0;
+            }
+            if c >= 2 {
+                if counter > 1 {
+                    c = 0;
+                    counter -= 1;
+                } else {
+                    cursor = i - 1;
+                    break;
+                }
+            }
+        }
+        if cursor == std::usize::MAX {
+            return None;
+        }
+        let mut result: Vec<Symbol> = vec![];
+        for i in 0..cursor {
+            result.push(self.0[i].clone());
+        }
+        for i in (cursor + 2)..self.0.len() {
+            result.push(self.0[i].clone());
+        }
+        Some(Theorem(result))
+    }
 }
 
 fn main() {
