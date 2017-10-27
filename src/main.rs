@@ -118,6 +118,16 @@ mod tests {
         ]);
         assert!(miiimimiiim.rule_3(2) == Some(miiimimum));
     }
+    #[test]
+    fn test_rule_3_on_just_iii() {
+        let iii: Theorem = Theorem(vec![
+            Symbol::I,
+            Symbol::I,
+            Symbol::I,
+        ]);
+        let u: Theorem = Theorem(vec![Symbol::U]);
+        assert!(iii.rule_3(1) == Some(u));
+    }
 }
 
 #[derive(Debug)]
@@ -221,6 +231,8 @@ impl Theorem {
         }
         Some(Theorem(result))
     }
+
+    // Rule 4: `xUUy -> xy` or cut out the n'th UU.
 }
 
 fn main() {
