@@ -1,4 +1,5 @@
 use std::fmt;
+use std::collections::HashSet;
 
 // run `cargo test` for these
 #[cfg(test)]
@@ -120,11 +121,7 @@ mod tests {
     }
     #[test]
     fn test_rule_3_on_just_iii() {
-        let iii: Theorem = Theorem(vec![
-            Symbol::I,
-            Symbol::I,
-            Symbol::I,
-        ]);
+        let iii: Theorem = Theorem(vec![Symbol::I, Symbol::I, Symbol::I]);
         let u: Theorem = Theorem(vec![Symbol::U]);
         assert!(iii.rule_3(1) == Some(u));
     }
@@ -142,12 +139,7 @@ mod tests {
     }
     #[test]
     fn test_rule_4_applies_on_single_occasion() {
-        let muum: Theorem = Theorem(vec![
-            Symbol::M,
-            Symbol::U,
-            Symbol::U,
-            Symbol::M
-        ]);
+        let muum: Theorem = Theorem(vec![Symbol::M, Symbol::U, Symbol::U, Symbol::M]);
         let mm: Theorem = Theorem(vec![Symbol::M, Symbol::M]);
         assert!(muum.rule_4(1) == Some(mm));
     }
@@ -201,10 +193,7 @@ mod tests {
     }
     #[test]
     fn test_rule_4_on_just_uu() {
-        let uu: Theorem = Theorem(vec![
-            Symbol::U,
-            Symbol::U,
-        ]);
+        let uu: Theorem = Theorem(vec![Symbol::U, Symbol::U]);
         let empty: Theorem = Theorem(vec![]);
         assert!(uu.rule_4(1) == Some(empty));
     }
@@ -213,6 +202,8 @@ mod tests {
 #[derive(Debug)]
 #[derive(PartialEq)]
 #[derive(Clone)]
+#[derive(Hash)]
+#[derive(Eq)]
 enum Symbol {
     M,
     I,
@@ -230,6 +221,10 @@ impl fmt::Display for Symbol {
 }
 
 #[derive(PartialEq)]
+#[derive(Debug)]
+#[derive(Hash)]
+#[derive(Eq)]
+#[derive(Clone)]
 pub struct Theorem(Vec<Symbol>);
 
 impl fmt::Display for Theorem {
@@ -351,12 +346,68 @@ impl Theorem {
 }
 
 fn main() {
-    let mi = Theorem(vec![Symbol::M,
-             Symbol::I,
-        //   Symbol::U,
-        ]);
-    match mi.rule_1() {
-        None => println!("{}", "Fail"),
-        Some(theorem) => println!("{}", theorem),
+    let mi = Theorem(vec![Symbol::M, Symbol::I]);
+    let mut wellknown_theorems: HashSet<Theorem> = HashSet::new();
+    let mut new_theorems: HashSet<Theorem> = HashSet::new();
+
+    new_theorems.insert(mi);
+
+    loop {
+        let mut temp: HashSet<Theorem> = HashSet::new();
+        let mut clone: HashSet<Theorem> = new_theorems.clone();
+        for x in clone.drain() {
+            if let Some(t) = x.rule_1() {
+                if !wellknown_theorems.contains(&t) && t.0.len() < 100 {
+                    //println!("{} -> {}", &x, &t);
+                    //println!("{}", &t);
+                    temp.insert(t);
+                }
+            }
+
+            if let Some(t) = x.rule_2() {
+                if !wellknown_theorems.contains(&t) && t.0.len() < 100 {
+                    //println!("{} -> {}", &x, &t);
+                    //println!("{}", &t);
+                    temp.insert(t);
+                }
+            }
+
+            for i in 1.. {
+                match x.rule_3(i) {
+                    Some(t) => {
+                        if !wellknown_theorems.contains(&t) && t.0.len() < 100 {
+                            //println!("{} -> {}", &x, &t);
+                            //println!("{}", &t);
+                            temp.insert(t);
+                        }
+                    },
+                    None => break
+                }
+            }
+
+            for i in 1.. {
+                match x.rule_4(i) {
+                    Some(t) => {
+                        if !wellknown_theorems.contains(&t) && t.0.len() < 100 {
+                            //println!("{} -> {}", &x, &t);
+                            //println!("{}", &t);
+                            temp.insert(t);
+                        }
+                    },
+                    None => break
+                }
+            }
+
+            wellknown_theorems.insert(x);
+            //println!("wellknown: {:?}", wellknown_theorems);
+        }
+        for x in temp.drain() {
+            if !new_theorems.contains(&x) {
+                println!("{}", &x);
+                new_theorems.insert(x);
+            }
+        }
+
     }
+
 }
